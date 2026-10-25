@@ -57,19 +57,20 @@ export async function auditNonText(
       if (!c) return null;
       const cached = colorCache.get(c);
       if (cached !== undefined) return cached;
-      let rgba: RGBA | null = null;
-      ctx.fillStyle = "#000";
-      ctx.fillStyle = c;
-      const fromBlack = ctx.fillStyle;
-      ctx.fillStyle = "#fff";
-      ctx.fillStyle = c;
-      if (fromBlack === ctx.fillStyle) {
-        ctx.clearRect(0, 0, 1, 1);
-        ctx.fillStyle = c;
-        ctx.fillRect(0, 0, 1, 1);
-        const d = ctx.getImageData(0, 0, 1, 1).data;
-        rgba = { r: d[0]!, g: d[1]!, b: d[2]!, a: d[3]! / 255 };
+      if (!CSS.supports("color", c)) {
+        colorCache.set(c, null);
+        return null;
       }
+      ctx.clearRect(0, 0, 1, 1);
+      ctx.fillStyle = c;
+      ctx.fillRect(0, 0, 1, 1);
+      const d = ctx.getImageData(0, 0, 1, 1).data;
+      const rgba: RGBA = {
+        r: d[0]!,
+        g: d[1]!,
+        b: d[2]!,
+        a: d[3]! / 255,
+      };
       colorCache.set(c, rgba);
       return rgba;
     };

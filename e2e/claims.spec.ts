@@ -980,9 +980,10 @@ test.describe("DC-net learner-visible claims", () => {
       ],
     ] as const;
     for (const [href, name] of links) {
-      await expect(
-        page.getByRole("link", { name: new RegExp(name) }),
-      ).toHaveAttribute("href", href);
+      await expect(page.getByRole("link", { name })).toHaveAttribute(
+        "href",
+        href,
+      );
     }
     await expect(page.locator(".detail-body")).toContainText(
       "comparison, not a property of this lab",

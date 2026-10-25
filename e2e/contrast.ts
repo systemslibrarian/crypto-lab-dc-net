@@ -72,11 +72,9 @@ export async function auditContrast(
        * them and the walk then falls through to the wrong backdrop — which
        * fabricates failures (dark-on-light read as dark-on-dark) and, far worse,
        * could hide a real one. The 2D canvas is the browser's own colour
-       * pipeline: assigning `fillStyle` converts any valid CSS colour — oklab,
-       * color-mix, hwb, named, hex — to sRGB, and a painted pixel carries the
-       * straight alpha back. Invalid input (a gradient direction keyword fed in by
-       * mistake) is rejected by the two-sentinel check so it cannot masquerade as
-       * black.
+       * pipeline: after CSS.supports rejects non-colour input, assigning
+       * `fillStyle` converts any valid CSS colour — oklab, color-mix, hwb, named,
+       * hex — to sRGB, and a painted pixel carries the straight alpha back.
        */
       const canvas = document.createElement("canvas");
       canvas.width = 1;
@@ -87,22 +85,15 @@ export async function auditContrast(
         if (!c) return null;
         const cached = colorCache.get(c);
         if (cached !== undefined) return cached;
-        let rgba: RGBA | null = null;
-        // A valid colour normalises to the same value from either sentinel; an
-        // invalid string leaves each sentinel in place and the two disagree.
-        ctx.fillStyle = "#000";
-        ctx.fillStyle = c;
-        const fromBlack = ctx.fillStyle;
-        ctx.fillStyle = "#fff";
-        ctx.fillStyle = c;
-        const fromWhite = ctx.fillStyle;
-        if (fromBlack === fromWhite) {
-          ctx.clearRect(0, 0, 1, 1);
-          ctx.fillStyle = c;
-          ctx.fillRect(0, 0, 1, 1);
-          const d = ctx.getImageData(0, 0, 1, 1).data;
-          rgba = { r: d[0], g: d[1], b: d[2], a: d[3] / 255 };
+        if (!CSS.supports("color", c)) {
+          colorCache.set(c, null);
+          return null;
         }
+        ctx.clearRect(0, 0, 1, 1);
+        ctx.fillStyle = c;
+        ctx.fillRect(0, 0, 1, 1);
+        const d = ctx.getImageData(0, 0, 1, 1).data;
+        const rgba: RGBA = { r: d[0], g: d[1], b: d[2], a: d[3] / 255 };
         colorCache.set(c, rgba);
         return rgba;
       };
