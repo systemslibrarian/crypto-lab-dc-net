@@ -220,12 +220,10 @@ const MUTATIONS = [
   {
     id: "AD04-M14",
     finding:
-      "A correct-width arbitrary replacement must reach the aggregate as a shaped jam.",
+      "The core shaped-jam result must expose the changed aggregate rather than the honest aggregate.",
     file: "src/dcnet/round.ts",
-    anchor:
-      "      contribution.participant === participant\n        ? dishonestBroadcast\n        : contribution.broadcast,",
-    replacement:
-      "      contribution.participant === participant\n        ? contribution.broadcast\n        : contribution.broadcast,",
+    anchor: "    jammedAggregate: aggregation.aggregate,",
+    replacement: "    jammedAggregate: copyBytes(round.aggregate),",
     target: unit(
       "src/dcnet/round.test.ts",
       "accepts every correct-width share without claiming it is honest",
