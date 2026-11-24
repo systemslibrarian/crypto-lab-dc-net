@@ -281,6 +281,18 @@ test.describe("DC-net learner-visible claims", () => {
     );
   });
 
+  test("a zero byte does not imply a nonzero sender", async ({ page }) => {
+    await page.goto("./");
+    await page.locator("#round-message").fill("00");
+    await page.getByRole("button", { name: "Run with fresh masks" }).click();
+    await expect(page.locator("#round-output")).toContainText(
+      "same public result as sending nothing",
+    );
+    expect(
+      await oneClaim(page.locator("#round-output"), "round-aggregate"),
+    ).toBe("00");
+  });
+
   test("input freshness distinguishes changes, no-ops, restoration, and rejection", async ({
     page,
   }) => {

@@ -53,7 +53,9 @@ function publicTranscript(round: RoundEvidence): HTMLElement {
         "round-cancellation",
         "pass",
         "MASKS CANCELLED",
-        "The public aggregate equals the independently recomputed XOR of participant inputs; the transcript does not name which participant supplied the nonzero byte.",
+        expected.every((byte) => byte === 0)
+          ? "The public aggregate is zero. A zero-byte input gives the same public result as sending nothing."
+          : "The public aggregate equals the independently recomputed XOR of participant inputs; the transcript does not name which participant supplied the nonzero byte.",
       )
     : verdict(
         "round-cancellation",
